@@ -217,7 +217,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
       /*            polygons->m[0][point+2], */
       /*            polygons->m[1][point+2], */
       /*            polygons->m[2][point+2], */
-      /*            s, zb, c) */;
+      /*            s, zb, c); */
     }
   }
 }

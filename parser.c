@@ -224,6 +224,27 @@ void parse_file ( char * filename,
           edges->lastcol = 0;
         }//end line
 
+        else if ( strncmp(line, "polygon", strlen(line)) == 0 ) {
+          fgets(line, sizeof(line), f);
+          //printf("LINE\t%s", line);
+
+          sscanf(line, "%lf %lf %lf %lf %lf %lf %lf %lf %lf",
+                 xvals, yvals, zvals,
+                 xvals+1, yvals+1, zvals+1,
+                 xvals+2, yvals+2, zvals+2);
+          /*printf("%lf %lf %lf %lf %lf %lf",
+            xvals[0], yvals[0], zvals[0],
+            xvals[1], yvals[1], zvals[1]) */
+          add_polygon(polygons, 
+            xvals[0], yvals[0], zvals[0],
+            xvals[1], yvals[1], zvals[1],
+            xvals[2], yvals[2], zvals[2]);
+          matrix_mult(peek(csystems), polygons);
+          draw_polygons(polygons, s, zb, c,
+                    view, light, ambient, areflect, dreflect, sreflect);
+          polygons->lastcol = 0;
+        }//end line
+
         else if ( strncmp(line, "scale", strlen(line)) == 0 ) {
           fgets(line, sizeof(line), f);
           //printf("SCALE\t%s", line);

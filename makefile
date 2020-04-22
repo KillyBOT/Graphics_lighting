@@ -1,7 +1,7 @@
 OBJECTS= main.o draw.o display.o matrix.o parser.o gmath.o stack.o
 CFLAGS= -Wall
 LDFLAGS= -lm
-CC= gcc
+CC= gcc -g
 
 run: all
 	./main script
