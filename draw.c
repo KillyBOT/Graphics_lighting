@@ -44,24 +44,19 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
   cG = c0.green;
   cB = c0.blue;
 
-  dcR = ((double)c1.red-(double)c0.red)/(x1-x0);
-  dcG = ((double)c1.green-(double)c0.green)/(x1-x0);
-  dcB = ((double)c1.blue-(double)c0.blue)/(x1-x0);
-
+  dcR = x1 != x0 ? ((double)c1.red-(double)c0.red)/(x1-x0+1) : 0;
+  dcG = x1 != x0 ? ((double)c1.green-(double)c0.green)/(x1-x0+1) : 0;
+  dcB = x1 != x0 ? ((double)c1.blue-(double)c0.blue)/(x1-x0+1) : 0;
 
   for(x=x0; x <= x1; x++) {
 
-    //n[0] = (x1 - x0) != 0 ? lerp(v0[0], v1[0], (x-x0)/(x1-x0)) : v0[0];
-    //n[1] = v0[1];
-    //n[2] = (z1 - z0) != 0 ? lerp(v0[2], v1[2], (z-z0)/(z1-z0)) : v0[2];
+    cF.red = (unsigned short)cR;
+    cF.green = (unsigned short)cG;
+    cF.blue = (unsigned short)cB;
 
-    //normalize(n);
+    limit_color(&cF);
 
-    //i = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
-
-    cF.red = cR;
-    cF.green = cG;
-    cF.blue = cB;
+    //printf("%d %d %d\n",cF.red,cF.green,cF.blue);
 
     plot(s, zb, cF, x, y, z);
 
@@ -82,7 +77,7 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
 
   Fills in polygon i by drawing consecutive horizontal (or vertical) lines.
   ====================*/
-void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color il, 
+void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb,
   struct htElement** ht) {
 
   int top, mid, bot, y;
@@ -173,28 +168,6 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
   botV[1] = points->m[1][bot];
   botV[2] = points->m[2][bot];
 
-  // topN[0] = getNormal(ht, topV)[0];
-  // topN[1] = getNormal(ht, topV)[1];
-  // topN[2] = getNormal(ht, topV)[2];
-
-  // midN[0] = getNormal(ht, midV)[0];
-  // midN[1] = getNormal(ht, midV)[1];
-  // midN[2] = getNormal(ht, midV)[2];
-
-  // botN[0] = getNormal(ht, botV)[0];
-  // botN[1] = getNormal(ht, botV)[1];
-  // botN[2] = getNormal(ht, botV)[2];
-
-  // xi0 = points->m[0][bot];
-  // yi0 = points->m[1][bot];
-  // zi0 = points->m[2][bot];
-  // xf = points->m[0][top];
-  // yf = points->m[1][top];
-  // zf = points->m[2][top];
-  // xi1 = points->m[0][mid];
-  // yi1 = points->m[1][mid];
-  // zi1 = points->m[2][mid];
-
   iTop = getColor(ht, topV);
   iMid = getColor(ht, midV);
   iBot = getColor(ht, botV);
@@ -206,13 +179,13 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
   c1G = iBot.green;
   c1B = iBot.blue;
 
-  dc0R = ((double)iTop.red-(double)iBot.red)/distance0;
-  dc0G = ((double)iTop.green-(double)iBot.green)/distance0;
-  dc0B = ((double)iTop.blue-(double)iBot.blue)/distance0;
+  dc0R = distance0 > 0 ? ((double)iTop.red-(double)iBot.red)/(double)distance0 : 0;
+  dc0G = distance0 > 0 ? ((double)iTop.green-(double)iBot.green)/(double)distance0 : 0;
+  dc0B = distance0 > 0 ? ((double)iTop.blue-(double)iBot.blue)/(double)distance0 : 0;
 
-  dc1R = ((double)iMid.red-(double)iBot.red)/distance1;
-  dc1G = ((double)iMid.green-(double)iBot.green)/distance1;
-  dc1B = ((double)iMid.blue-(double)iBot.blue)/distance1;
+  dc1R = distance1 > 0 ? ((double)iMid.red-(double)iBot.red)/(double)distance1 : 0;
+  dc1G = distance1 > 0 ? ((double)iMid.green-(double)iBot.green)/(double)distance1 : 0;
+  dc1B = distance1 > 0 ? ((double)iMid.blue-(double)iBot.blue)/(double)distance1 : 0;
 
   while ( y <= (int)points->m[1][top] ) {
     //printf("\tx0: %0.2f x1: %0.2f y: %d\n", x0, x1, y);
@@ -226,9 +199,9 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
       dx1 = distance2 > 0 ? (points->m[0][top]-points->m[0][mid])/distance2 : 0;
       dz1 = distance2 > 0 ? (points->m[2][top]-points->m[2][mid])/distance2 : 0;
 
-      dc1R = ((double)iTop.red-(double)iMid.red)/distance2;
-      dc1G = ((double)iTop.green-(double)iMid.green)/distance2;
-      dc1B = ((double)iTop.blue-(double)iMid.blue)/distance2;
+      dc1R = distance2 > 0 ? ((double)iTop.red-(double)iMid.red)/(double)distance2 : 0;
+      dc1G = distance2 > 0 ? ((double)iTop.green-(double)iMid.green)/(double)distance2 : 0;
+      dc1B = distance2 > 0 ? ((double)iTop.blue-(double)iMid.blue)/(double)distance2 : 0;
 
       c1R = iMid.red;
       c1G = iMid.green;
@@ -238,24 +211,19 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
       z1 = points->m[2][mid];
     }//end flip code
 
-    /*if(y >= (int)(points->m[1][mid]) ){
-      v1[0] = lerp(midN[0],topN[0],(x1-xi1)/(xf-xi1));
-      v1[1] = lerp(midN[1],topN[1],(y1-yi1)/(yf-yi1));
-      v1[2] = lerp(midN[2],topN[2],(z1-zi1)/(zf-zi1));
-    } else {
-      v1[0] = lerp(botN[0],midN[0],(x1-xi0)/(xi1-xi0));
-      v1[1] = lerp(botN[1],midN[1],(y1-yi0)/(yi1-yi0));
-      v1[2] = lerp(botN[2],midN[2],(z1-zi0)/(zi1-zi0));
-    }*/
-    //draw_line(x0, y, z0, x1, y, z1, s, zb, il);
+    c0.red = (unsigned short)c0R;
+    c0.green = (unsigned short)c0G;
+    c0.blue = (unsigned short)c0B;
 
-    c0.red = c0R;
-    c0.green = c0G;
-    c0.blue = c0B;
+    limit_color(&c0);
 
-    c1.red = c1R;
-    c1.green = c1G;
-    c1.blue = c1B;
+    c1.red = (unsigned short)c1R;
+    c1.green = (unsigned short)c1G;
+    c1.blue = (unsigned short)c1B;
+
+    limit_color(&c1);
+    //printf("%f %f %f %f %f %f\n%d %d %d %d %d %d\n",c0R, c0G, c0B, c1R, c1G, c1B,c0.red,c0.green,c0.blue,c1.red,c1.green,c1.blue);
+
 
     draw_scanline(x0, z0, x1, z1, y, s, zb, c0, c1);
 
@@ -330,6 +298,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   for (point=0; point < polygons->lastcol-2; point+=3) {
 
     normal = calculate_normal(polygons, point);
+    normalize(normal);
 
     v0[0] = polygons->m[0][point];
     v0[1] = polygons->m[1][point];
@@ -359,8 +328,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
 
       // get color value only if front facing
       //color i = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect);
-      color i = {255, 255, 255};
-      scanline_convert(polygons, point, s, zb, i, ht);
+      scanline_convert(polygons, point, s, zb, ht);
 
       /* draw_line( polygons->m[0][point], */
       /*            polygons->m[1][point], */

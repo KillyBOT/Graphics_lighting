@@ -8,7 +8,7 @@
 
 
 void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, color c0, color c1);
-void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color il, struct htElement** ht);
+void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, struct htElement** ht);
 void draw_line_horizontal(int x0, int x1, 
   int y, double z0, double z1, 
   screen s, zbuffer zb, color c);

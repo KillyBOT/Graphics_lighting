@@ -98,8 +98,6 @@ void parse_file ( char * filename,
   c.red = 0;
   c.green = 255;
   c.blue = 255;
-  struct htElement** ht = createHT();
-  printHT(ht);
 
   if ( strcmp(filename, "stdin") == 0 )
     f = stdin;
@@ -118,8 +116,8 @@ void parse_file ( char * filename,
     double theta;
     char axis;
     int type;
-    int step_3d = 30;
-    int step = 30;
+    int step_3d = 70;
+    int step = 70;
 
     if ( strncmp(line, "push", strlen(line)) == 0 ) {
       //printf("PUSH\b");

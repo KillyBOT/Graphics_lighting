@@ -9,13 +9,14 @@ struct htElement{
 	double vertex[3];
 	double normal[3];
 	int num;
+	int key;
 	color c;
 };
 
 struct htElement** createHT();
 void freeHT(struct htElement** ht);
 
-int getKey(double * vertex);
+unsigned int getKey(double * vertex);
 
 void addNormal(struct htElement** ht, double* vertex, double* normal);
 double * getNormal(struct htElement** ht, double * vertex);

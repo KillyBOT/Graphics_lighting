@@ -8,6 +8,9 @@ struct htElement** createHT(){
 	struct htElement** ht = malloc(sizeof(struct htElement) * HASHTABLE_SIZE);
 
 	for(int x = 0; x < HASHTABLE_SIZE; x++){
+		if(ht[x] != NULL){
+			free(ht[x]);
+		}
 		ht[x] = NULL;
 	}
 
@@ -21,8 +24,8 @@ void freeHT(struct htElement** ht){
 	free(ht);
 }
 
-int getKey(double * vertex){
-	unsigned int f = ((unsigned int)vertex[0] + (unsigned int)vertex[1] * 11 - (unsigned int)vertex[2] * 17) & 0x7fffffff;
+unsigned int getKey(double * vertex){
+	unsigned int f = ((unsigned int)vertex[0] + (unsigned int)vertex[1] * 11 - (unsigned int)vertex[2] * 17);
 	return ((f >> 22) ^ (f >> 12) ^ f) % HASHTABLE_SIZE;
 }
 
@@ -65,13 +68,16 @@ int getKey(double * vertex){
 }*/
 
 void addNormal(struct htElement** ht, double* vertex, double* normal){
-	int vKey = getKey(vertex);
-	int index = vKey;
+	// double vNew[3];
+	// vNew[0] = (int)(vertex[0]*1000)/1000.0;
+	// vNew[1] = (int)(vertex[1]*1000)/1000.0;
+	// vNew[2] = (int)(vertex[2]*1000)/1000.0;
 
-	while(ht[index] != NULL && ht[index]->vertex[0] != vertex[0] && ht[index]->vertex[1] != vertex[1] && ht[index]->vertex[2] != vertex[2]){
+	unsigned int index = getKey(vertex);
+
+	while(ht[index] != NULL && (ht[index]->vertex[0] != vertex[0] || ht[index]->vertex[1] != vertex[1] || ht[index]->vertex[2] != vertex[2])){
 		index++;
 		index %= HASHTABLE_SIZE;
-		//printf("%d\n",index);
 	}
 
 	if(ht[index] == NULL) {
@@ -82,7 +88,7 @@ void addNormal(struct htElement** ht, double* vertex, double* normal){
 		ht[index]->normal[0] = normal[0];
 		ht[index]->normal[1] = normal[1];
 		ht[index]->normal[2] = normal[2];
-		ht[index]->num = 0;
+		ht[index]->num = 1;
 	} else {
 		ht[index]->normal[0] += normal[0];
 		ht[index]->normal[1] += normal[1];
@@ -93,8 +99,12 @@ void addNormal(struct htElement** ht, double* vertex, double* normal){
 
 double* getNormal(struct htElement** ht, double* vertex){
 
-	int vKey = getKey(vertex);
-	int index = vKey;
+	// double vNew[3];
+	// vNew[0] = (int)(vertex[0]*1000)/1000.0;
+	// vNew[1] = (int)(vertex[1]*1000)/1000.0;
+	// vNew[2] = (int)(vertex[2]*1000)/1000.0;
+
+	unsigned int index = getKey(vertex);
 
 	while(ht[index] != NULL && ht[index]->vertex[0] != vertex[0] && ht[index]->vertex[1] != vertex[1] && ht[index]->vertex[2] != vertex[2]){
 		index++;
@@ -105,25 +115,30 @@ double* getNormal(struct htElement** ht, double* vertex){
 }
 
 color getColor(struct htElement** ht, double* vertex){
-	int vKey = getKey(vertex);
-	int index = vKey;
+	// double vNew[3];
+	// vNew[0] = (int)(vertex[0]*1000)/1000.0;
+	// vNew[1] = (int)(vertex[1]*1000)/1000.0;
+	// vNew[2] = (int)(vertex[2]*1000)/1000.0;
 
-	while(ht[index] != NULL && ht[index]->vertex[0] != vertex[0] && ht[index]->vertex[1] != vertex[1] && ht[index]->vertex[2] != vertex[2]){
+	int index = getKey(vertex);
+
+	while(ht[index]->vertex[0] != vertex[0] || ht[index]->vertex[1] != vertex[1] || ht[index]->vertex[2] != vertex[2]){
 		index++;
 		index %= HASHTABLE_SIZE;
 	}
-
+	//printf("%d %d %d\n", ht[index]->c.red, ht[index]->c.green, ht[index]->c.blue);
 	return ht[index]->c;
+	//return c;
 }
 
 void htNormalize(struct htElement** ht, double *view, double light[2][3], color ambient,
   double *areflect, double *dreflect, double *sreflect){
 	for(int x = 0; x < HASHTABLE_SIZE; x++){
 		if(ht[x] != NULL){
-			//ht[x]->normal[0] /= ht[x]->num;
-			//ht[x]->normal[1] /= ht[x]->num;
-			//ht[x]->normal[2] /= ht[x]->num;
-			normalize(ht[x]->normal);
+			ht[x]->normal[0] /= ht[x]->num;
+			ht[x]->normal[1] /= ht[x]->num;
+			ht[x]->normal[2] /= ht[x]->num;
+			//normalize(ht[x]->normal);
 			ht[x]->c = get_lighting(ht[x]->normal, view, ambient, light, areflect, dreflect, sreflect);
 			//printf("%f\n",ht[x]->normal[0]*ht[x]->normal[0] + ht[x]->normal[1]*ht[x]->normal[1] + ht[x]->normal[2]*ht[x]->normal[2]);
 		}
