@@ -17,16 +17,22 @@
 
   Line algorithm specifically for horizontal scanlines
   ====================*/
-void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, color c) {
-  int tx, tz;
+void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, color c0, color c1) {
+  int tempX, tempZ;
+  color tempC;
+  double cR, cG, cB, dcR, dcG, dcB;
+  color cF;
   //swap if needed to assure left->right drawing
   if (x0 > x1) {
-    tx = x0;
-    tz = z0;
+    tempX = x0;
+    tempZ = z0;
+    tempC = c0;
     x0 = x1;
     z0 = z1;
-    x1 = tx;
-    z1 = tz;
+    c0 = c1;
+    x1 = tempX;
+    z1 = tempZ;
+    c1 = tempC;
   }
 
   double delta_z;
@@ -34,9 +40,36 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
   int x;
   double z = z0;
 
+  cR = c0.red;
+  cG = c0.green;
+  cB = c0.blue;
+
+  dcR = ((double)c1.red-(double)c0.red)/(x1-x0);
+  dcG = ((double)c1.green-(double)c0.green)/(x1-x0);
+  dcB = ((double)c1.blue-(double)c0.blue)/(x1-x0);
+
+
   for(x=x0; x <= x1; x++) {
-    plot(s, zb, c, x, y, z);
+
+    //n[0] = (x1 - x0) != 0 ? lerp(v0[0], v1[0], (x-x0)/(x1-x0)) : v0[0];
+    //n[1] = v0[1];
+    //n[2] = (z1 - z0) != 0 ? lerp(v0[2], v1[2], (z-z0)/(z1-z0)) : v0[2];
+
+    //normalize(n);
+
+    //i = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
+
+    cF.red = cR;
+    cF.green = cG;
+    cF.blue = cB;
+
+    plot(s, zb, cF, x, y, z);
+
     z+= delta_z;
+    cR += dcR;
+    cG += dcG;
+    cB += dcB;
+
   }
 }
 
@@ -49,11 +82,18 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
 
   Fills in polygon i by drawing consecutive horizontal (or vertical) lines.
   ====================*/
-void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color il ) {
+void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color il, 
+  struct htElement** ht) {
 
   int top, mid, bot, y;
+  double topV[3], midV[3], botV[3];
+  // double topN[3], midN[3], botN[3];
   int distance0, distance1, distance2;
   double x0, x1, y0, y1, y2, dx0, dx1, z0, z1, dz0, dz1;
+  color iTop, iMid, iBot;
+  color c0, c1;
+  double c0R, c0G, c0B, c1R, c1G, c1B;
+  double dc0R, dc0G, dc0B, dc1R, dc1G, dc1B;
   int flip = 0;
 
   z0 = z1 = dz0 = dz1 = 0;
@@ -121,24 +161,119 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
   dz0 = distance0 > 0 ? (points->m[2][top]-points->m[2][bot])/distance0 : 0;
   dz1 = distance1 > 0 ? (points->m[2][mid]-points->m[2][bot])/distance1 : 0;
 
+  topV[0] = points->m[0][top];
+  topV[1] = points->m[1][top];
+  topV[2] = points->m[2][top];
+
+  midV[0] = points->m[0][mid];
+  midV[1] = points->m[1][mid];
+  midV[2] = points->m[2][mid];
+
+  botV[0] = points->m[0][bot];
+  botV[1] = points->m[1][bot];
+  botV[2] = points->m[2][bot];
+
+  // topN[0] = getNormal(ht, topV)[0];
+  // topN[1] = getNormal(ht, topV)[1];
+  // topN[2] = getNormal(ht, topV)[2];
+
+  // midN[0] = getNormal(ht, midV)[0];
+  // midN[1] = getNormal(ht, midV)[1];
+  // midN[2] = getNormal(ht, midV)[2];
+
+  // botN[0] = getNormal(ht, botV)[0];
+  // botN[1] = getNormal(ht, botV)[1];
+  // botN[2] = getNormal(ht, botV)[2];
+
+  // xi0 = points->m[0][bot];
+  // yi0 = points->m[1][bot];
+  // zi0 = points->m[2][bot];
+  // xf = points->m[0][top];
+  // yf = points->m[1][top];
+  // zf = points->m[2][top];
+  // xi1 = points->m[0][mid];
+  // yi1 = points->m[1][mid];
+  // zi1 = points->m[2][mid];
+
+  iTop = getColor(ht, topV);
+  iMid = getColor(ht, midV);
+  iBot = getColor(ht, botV);
+
+  c0R = iBot.red;
+  c0G = iBot.green;
+  c0B = iBot.blue;
+  c1R = iBot.red;
+  c1G = iBot.green;
+  c1B = iBot.blue;
+
+  dc0R = ((double)iTop.red-(double)iBot.red)/distance0;
+  dc0G = ((double)iTop.green-(double)iBot.green)/distance0;
+  dc0B = ((double)iTop.blue-(double)iBot.blue)/distance0;
+
+  dc1R = ((double)iMid.red-(double)iBot.red)/distance1;
+  dc1G = ((double)iMid.green-(double)iBot.green)/distance1;
+  dc1B = ((double)iMid.blue-(double)iBot.blue)/distance1;
+
   while ( y <= (int)points->m[1][top] ) {
     //printf("\tx0: %0.2f x1: %0.2f y: %d\n", x0, x1, y);
+
+    /*v0[0] = lerp(botN[0],topN[0],(x0-xi0)/(xf-xi0));
+    v0[1] = lerp(botN[1],topN[1],(y0-yi0)/(yf-yi0));
+    v0[2] = lerp(botN[2],topN[2],(z0-zi0)/(zf-zi0));*/
 
     if ( !flip && y >= (int)(points->m[1][mid]) ) {
       flip = 1;
       dx1 = distance2 > 0 ? (points->m[0][top]-points->m[0][mid])/distance2 : 0;
       dz1 = distance2 > 0 ? (points->m[2][top]-points->m[2][mid])/distance2 : 0;
+
+      dc1R = ((double)iTop.red-(double)iMid.red)/distance2;
+      dc1G = ((double)iTop.green-(double)iMid.green)/distance2;
+      dc1B = ((double)iTop.blue-(double)iMid.blue)/distance2;
+
+      c1R = iMid.red;
+      c1G = iMid.green;
+      c1B = iMid.blue;
+
       x1 = points->m[0][mid];
       z1 = points->m[2][mid];
     }//end flip code
+
+    /*if(y >= (int)(points->m[1][mid]) ){
+      v1[0] = lerp(midN[0],topN[0],(x1-xi1)/(xf-xi1));
+      v1[1] = lerp(midN[1],topN[1],(y1-yi1)/(yf-yi1));
+      v1[2] = lerp(midN[2],topN[2],(z1-zi1)/(zf-zi1));
+    } else {
+      v1[0] = lerp(botN[0],midN[0],(x1-xi0)/(xi1-xi0));
+      v1[1] = lerp(botN[1],midN[1],(y1-yi0)/(yi1-yi0));
+      v1[2] = lerp(botN[2],midN[2],(z1-zi0)/(zi1-zi0));
+    }*/
     //draw_line(x0, y, z0, x1, y, z1, s, zb, il);
-    draw_scanline(x0, z0, x1, z1, y, s, zb, il);
+
+    c0.red = c0R;
+    c0.green = c0G;
+    c0.blue = c0B;
+
+    c1.red = c1R;
+    c1.green = c1G;
+    c1.blue = c1B;
+
+    draw_scanline(x0, z0, x1, z1, y, s, zb, c0, c1);
 
     x0+= dx0;
     x1+= dx1;
     z0+= dz0;
     z1+= dz1;
+
+    c0R += dc0R;
+    c0G += dc0G;
+    c0B += dc0B;
+
+    c1R += dc1R;
+    c1G += dc1G;
+    c1B += dc1B;
+
     y++;
+
   }//end scanline loop
 }
 
@@ -162,7 +297,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
 void add_polygon( struct matrix *polygons,
                   double x0, double y0, double z0,
                   double x1, double y1, double z1,
-                  double x2, double y2, double z2 ) {
+                  double x2, double y2, double z2) {
   add_point(polygons, x0, y0, z0);
   add_point(polygons, x1, y1, z1);
   add_point(polygons, x2, y2, z2);
@@ -186,16 +321,46 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
 
   int point;
   double *normal;
+  double v0[3];
+  double v1[3];
+  double v2[3];
+  struct htElement** ht = createHT();
+
 
   for (point=0; point < polygons->lastcol-2; point+=3) {
 
     normal = calculate_normal(polygons, point);
 
+    v0[0] = polygons->m[0][point];
+    v0[1] = polygons->m[1][point];
+    v0[2] = polygons->m[2][point];
+
+    v1[0] = polygons->m[0][point+1];
+    v1[1] = polygons->m[1][point+1];
+    v1[2] = polygons->m[2][point+1];
+
+    v2[0] = polygons->m[0][point+2];
+    v2[1] = polygons->m[1][point+2];
+    v2[2] = polygons->m[2][point+2];
+
+    addNormal(ht, v0, normal);
+    addNormal(ht, v1, normal);
+    addNormal(ht, v2, normal);
+  }
+
+  htNormalize(ht, view, light, ambient, areflect, dreflect, sreflect);
+  //printHT(ht);
+
+  for(point = 0; point < polygons->lastcol-2; point+=3){
+    normal = calculate_normal(polygons, point);
+    //printf("%f %f %f\n",normal[0],normal[1],normal[2]);
+
     if ( normal[2] > 0 ) {
 
       // get color value only if front facing
-      color i = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect);
-      scanline_convert(polygons, point, s, zb, i);
+      //color i = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect);
+      color i = {255, 255, 255};
+      scanline_convert(polygons, point, s, zb, i, ht);
 
       /* draw_line( polygons->m[0][point], */
       /*            polygons->m[1][point], */
@@ -220,6 +385,8 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
       /*            s, zb, c); */
     }
   }
+
+  freeHT(ht);
 }
 
 /*======== void add_box() ==========
@@ -237,7 +404,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   ====================*/
 void add_box( struct matrix *polygons,
               double x, double y, double z,
-              double width, double height, double depth ) {
+              double width, double height, double depth) {
   double x1, y1, z1;
   x1 = x+width;
   y1 = y-height;
@@ -285,7 +452,7 @@ void add_box( struct matrix *polygons,
   ====================*/
 void add_sphere( struct matrix * edges,
                  double cx, double cy, double cz,
-                 double r, int step ) {
+                 double r, int step) {
 
   struct matrix *points = generate_sphere(cx, cy, cz, r, step);
   int p0, p1, p2, p3, lat, longt;
@@ -369,7 +536,7 @@ void add_sphere( struct matrix * edges,
            Returns a matrix of those points
   ====================*/
 struct matrix * generate_sphere(double cx, double cy, double cz,
-                                double r, int step ) {
+                                double r, int step) {
 
   struct matrix *points = new_matrix(4, step * step);
   int circle, rotation, rot_start, rot_stop, circ_start, circ_stop;
@@ -419,7 +586,7 @@ struct matrix * generate_sphere(double cx, double cy, double cz,
   ====================*/
 void add_torus( struct matrix * edges, 
                 double cx, double cy, double cz,
-                double r1, double r2, int step ) {
+                double r1, double r2, int step) {
 
   struct matrix *points = generate_torus(cx, cy, cz, r1, r2, step);
   int p0, p1, p2, p3, lat, longt;
@@ -477,7 +644,7 @@ void add_torus( struct matrix * edges,
            Returns a matrix of those points
   ====================*/
 struct matrix * generate_torus( double cx, double cy, double cz,
-                                double r1, double r2, int step ) {
+                                double r1, double r2, int step) {
 
   struct matrix *points = new_matrix(4, step * step);
   int circle, rotation, rot_start, rot_stop, circ_start, circ_stop;

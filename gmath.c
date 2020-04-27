@@ -29,6 +29,8 @@ color get_lighting( double *normal, double *view, color alight, double light[2][
   normalize(normal);
   normalize(view);
 
+  //printf("%f %f %f\n", normal[0], normal[1], normal[2]);
+
   iA = calculate_ambient(alight, areflect);
   iD = calculate_diffuse(light, dreflect, normal);
   iS = calculate_specular(light, sreflect, view, normal);
@@ -93,7 +95,7 @@ color calculate_specular(double light[2][3], double *sreflect, double *view, dou
   double t[3];
   double r[3];
   double temp, cosine;
-  double sPower = 2;
+  double sPower = 50;
 
   l[0] = light[0][0];
   l[1] = light[0][1];
@@ -135,6 +137,10 @@ void limit_color( color * c ) {
 }
 
 //vector functions
+
+double lerp(double v0, double v1, double t){
+  return (1 - t) * v0 + t * v1;
+}
 //normalize vetor, should modify the parameter
 void normalize( double *vector ) {
   double magnitude;

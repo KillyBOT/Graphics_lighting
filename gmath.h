@@ -23,6 +23,7 @@ color calculate_specular(double light[2][3], double *sreflect, double *view, dou
 void limit_color( color * c );
 
 // vector functions
+double lerp(double v0, double v1, double t);
 void normalize( double *vector );
 double dot_product( double *a, double *b );
 double *calculate_normal(struct matrix *polygons, int i);

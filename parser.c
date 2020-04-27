@@ -9,6 +9,7 @@
 #include "matrix.h"
 #include "parser.h"
 #include "stack.h"
+#include "hashTable.h"
 
 /*======== void parse_file () ==========
 Inputs:   char * filename
@@ -97,6 +98,8 @@ void parse_file ( char * filename,
   c.red = 0;
   c.green = 255;
   c.blue = 255;
+  struct htElement** ht = createHT();
+  printHT(ht);
 
   if ( strcmp(filename, "stdin") == 0 )
     f = stdin;
@@ -115,8 +118,8 @@ void parse_file ( char * filename,
     double theta;
     char axis;
     int type;
-    int step_3d = 100;
-    int step = 100;
+    int step_3d = 30;
+    int step = 30;
 
     if ( strncmp(line, "push", strlen(line)) == 0 ) {
       //printf("PUSH\b");
@@ -239,10 +242,6 @@ void parse_file ( char * filename,
             xvals[0], yvals[0], zvals[0],
             xvals[1], yvals[1], zvals[1],
             xvals[2], yvals[2], zvals[2]);
-          matrix_mult(peek(csystems), polygons);
-          draw_polygons(polygons, s, zb, c,
-                    view, light, ambient, areflect, dreflect, sreflect);
-          polygons->lastcol = 0;
         }//end line
 
         else if ( strncmp(line, "scale", strlen(line)) == 0 ) {
@@ -300,11 +299,13 @@ void parse_file ( char * filename,
     /*   ident(transform); */
     /* }//end ident */
 
-    /* else if ( strncmp(line, "apply", strlen(line)) == 0 ) { */
-    /*   //printf("APPLY\t%s", line); */
-    /*   matrix_mult(transform, edges); */
-    /*   matrix_mult(transform, polygons); */
-    /* }//end apply */
+    else if ( strncmp(line, "apply", strlen(line)) == 0 ) { 
+       //printf("APPLY\t%s", line);
+      matrix_mult(peek(csystems), polygons);
+      draw_polygons(polygons, s, zb, c,
+                view, light, ambient, areflect, dreflect, sreflect);
+      polygons->lastcol = 0;
+     }//end apply 
 
     else if ( strncmp(line, "display", strlen(line)) == 0 ) {
       //printf("DISPLAY\t%s", line);

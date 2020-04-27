@@ -1,4 +1,4 @@
-OBJECTS= main.o draw.o display.o matrix.o parser.o gmath.o stack.o
+OBJECTS= main.o draw.o display.o matrix.o parser.o gmath.o stack.o hashTable.o
 CFLAGS= -Wall
 LDFLAGS= -lm
 CC= gcc -g
@@ -21,7 +21,7 @@ dsiplay.o: display.c display.h ml6.h matrix.h
 matrix.o: matrix.c matrix.h
 	$(CC) $(CFLAGS) -c matrix.c
 
-parser.o: parser.c parser.h matrix.h draw.h display.h ml6.h stack.h
+parser.o: parser.c parser.h matrix.h draw.h display.h ml6.h stack.h hashTable.h
 	$(CC) $(CFLAGS) -c parser.c
 
 gmath.o: gmath.c gmath.h matrix.h
@@ -29,6 +29,9 @@ gmath.o: gmath.c gmath.h matrix.h
 
 stack.o: stack.c stack.h matrix.h
 	$(CC) $(CFLAGS) -c stack.c
+
+hashTable.o: hashTable.c hashTable.h gmath.h
+	$(CC) $(CFLAGS) -c hashTable.c
 
 clean:
 	rm *.o *~
