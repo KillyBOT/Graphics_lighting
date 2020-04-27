@@ -150,7 +150,6 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb,
   distance1 = (int)(points->m[1][mid]) - y + 1;
   distance2 = (int)(points->m[1][top]) - (int)(points->m[1][mid]) + 1;
 
-  //printf("distance0: %d distance1: %d distance2: %d\n", distance0, distance1, distance2);
   dx0 = distance0 > 0 ? (points->m[0][top]-points->m[0][bot])/distance0 : 0;
   dx1 = distance1 > 0 ? (points->m[0][mid]-points->m[0][bot])/distance1 : 0;
   dz0 = distance0 > 0 ? (points->m[2][top]-points->m[2][bot])/distance0 : 0;
@@ -215,15 +214,11 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb,
     c0.green = (unsigned short)c0G;
     c0.blue = (unsigned short)c0B;
 
-    limit_color(&c0);
-
     c1.red = (unsigned short)c1R;
     c1.green = (unsigned short)c1G;
     c1.blue = (unsigned short)c1B;
 
-    limit_color(&c1);
     //printf("%f %f %f %f %f %f\n%d %d %d %d %d %d\n",c0R, c0G, c0B, c1R, c1G, c1B,c0.red,c0.green,c0.blue,c1.red,c1.green,c1.blue);
-
 
     draw_scanline(x0, z0, x1, z1, y, s, zb, c0, c1);
 
@@ -293,12 +288,13 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   double v1[3];
   double v2[3];
   struct htElement** ht = createHT();
-
+  double** normals = malloc(sizeof(double) * (polygons->lastcol));
 
   for (point=0; point < polygons->lastcol-2; point+=3) {
 
     normal = calculate_normal(polygons, point);
     normalize(normal);
+    normals[point/3] = normal;
 
     v0[0] = polygons->m[0][point];
     v0[1] = polygons->m[1][point];
@@ -321,10 +317,10 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   //printHT(ht);
 
   for(point = 0; point < polygons->lastcol-2; point+=3){
-    normal = calculate_normal(polygons, point);
+    //normal = calculate_normal(polygons, point);
     //printf("%f %f %f\n",normal[0],normal[1],normal[2]);
 
-    if ( normal[2] > 0 ) {
+    if ( normals[point/3][2] > 0 ) {
 
       // get color value only if front facing
       //color i = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect);
@@ -352,9 +348,11 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
       /*            polygons->m[2][point+2], */
       /*            s, zb, c); */
     }
+    free(normals[point/3]);
   }
 
   freeHT(ht);
+  free(normals);
 }
 
 /*======== void add_box() ==========

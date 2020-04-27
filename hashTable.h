@@ -1,7 +1,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-#define HASHTABLE_SIZE 1048576
+#define HASHTABLE_SIZE 65536
 
 #include "ml6.h"
 

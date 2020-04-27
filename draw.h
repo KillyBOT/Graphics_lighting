@@ -8,7 +8,13 @@
 
 
 void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, color c0, color c1);
+void draw_scanline_phong(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, double* n0, double* n1,
+  double *view, double light[2][3], color ambient,
+  double *areflect, double *dreflect, double *sreflect);
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, struct htElement** ht);
+void scanline_convert_phong( struct matrix* points, int i, screen s, zbuffer zb, struct htElement** ht, 
+  double *view, double light[2][3], color ambient,
+  double *areflect, double *dreflect, double *sreflect);
 void draw_line_horizontal(int x0, int x1, 
   int y, double z0, double z1, 
   screen s, zbuffer zb, color c);

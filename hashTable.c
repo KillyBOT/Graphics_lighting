@@ -8,9 +8,6 @@ struct htElement** createHT(){
 	struct htElement** ht = malloc(sizeof(struct htElement) * HASHTABLE_SIZE);
 
 	for(int x = 0; x < HASHTABLE_SIZE; x++){
-		if(ht[x] != NULL){
-			free(ht[x]);
-		}
 		ht[x] = NULL;
 	}
 
