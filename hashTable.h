@@ -33,7 +33,7 @@ struct hashTable {
 // void htNormalize(struct htElement** ht, double *view, double light[2][3], color ambient,
 //   double *areflect, double *dreflect, double *sreflect);
 
-struct hashTable* createHT();
+struct hashTable* createHT(int size);
 void freeHT(struct hashTable* h);
 
 unsigned int getKey(struct hashTable* h, double * vertex);

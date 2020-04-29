@@ -287,7 +287,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   double v0[3];
   double v1[3];
   double v2[3];
-  struct hashTable* h = createHT();
+  struct hashTable* h = createHT(16);
   double** normals = malloc(sizeof(double) * (polygons->lastcol));
 
   for (point=0; point < polygons->lastcol-2; point+=3) {

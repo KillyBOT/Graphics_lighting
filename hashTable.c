@@ -115,10 +115,10 @@
 
 //This is using a new hashTable structure
 
-struct hashTable* createHT(){
+struct hashTable* createHT(int size){
 	struct hashTable* h = malloc(sizeof(struct hashTable));
 	h->size = 0;
-	h->maxSize = 8;
+	h->maxSize = size;
 
 	h->ht = malloc(sizeof(struct htElement) * h->maxSize);
 
@@ -149,17 +149,12 @@ struct hashTable* addNormal(struct hashTable* h, double* vertex, double* normal)
 
 	if(h->size >= h->maxSize){
 		//printf("Expanding from %d to %d\n",h->size,h->size*2);
-		hNew = createHT();
-		hNew->maxSize = h->maxSize*2;
-		hNew->ht = realloc(hNew->ht, sizeof(struct htElement) * hNew->maxSize);
-
-		for(int n = 0; n < hNew->maxSize; n++){
-			hNew->ht[n] = NULL;
-		}
+		hNew = createHT(h->maxSize*2);
 
 		for(int n = 0; n < h->maxSize; n++){
 			addNormal(hNew, h->ht[n]->vertex,h->ht[n]->normal);
 		}
+		
 		freeHT(h);
 		addNormal(hNew, vertex, normal);
 		return hNew;
