@@ -78,7 +78,7 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
   Fills in polygon i by drawing consecutive horizontal (or vertical) lines.
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb,
-  struct htElement** ht) {
+  struct hashTable* h) {
 
   int top, mid, bot, y;
   double topV[3], midV[3], botV[3];
@@ -167,9 +167,9 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb,
   botV[1] = points->m[1][bot];
   botV[2] = points->m[2][bot];
 
-  iTop = getColor(ht, topV);
-  iMid = getColor(ht, midV);
-  iBot = getColor(ht, botV);
+  iTop = getColor(h, topV);
+  iMid = getColor(h, midV);
+  iBot = getColor(h, botV);
 
   c0R = iBot.red;
   c0G = iBot.green;
@@ -287,7 +287,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
   double v0[3];
   double v1[3];
   double v2[3];
-  struct htElement** ht = createHT();
+  struct hashTable* h = createHT();
   double** normals = malloc(sizeof(double) * (polygons->lastcol));
 
   for (point=0; point < polygons->lastcol-2; point+=3) {
@@ -308,12 +308,12 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
     v2[1] = polygons->m[1][point+2];
     v2[2] = polygons->m[2][point+2];
 
-    addNormal(ht, v0, normal);
-    addNormal(ht, v1, normal);
-    addNormal(ht, v2, normal);
+    h = addNormal(h, v0, normal);
+    h = addNormal(h, v1, normal);
+    h = addNormal(h, v2, normal);
   }
 
-  htNormalize(ht, view, light, ambient, areflect, dreflect, sreflect);
+  htNormalize(h, view, light, ambient, areflect, dreflect, sreflect);
   //printHT(ht);
 
   for(point = 0; point < polygons->lastcol-2; point+=3){
@@ -324,7 +324,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
 
       // get color value only if front facing
       //color i = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect);
-      scanline_convert(polygons, point, s, zb, ht);
+      scanline_convert(polygons, point, s, zb, h);
 
       /* draw_line( polygons->m[0][point], */
       /*            polygons->m[1][point], */
@@ -351,7 +351,7 @@ void draw_polygons( struct matrix *polygons, screen s, zbuffer zb, color c,
     free(normals[point/3]);
   }
 
-  freeHT(ht);
+  freeHT(h);
   free(normals);
 }
 

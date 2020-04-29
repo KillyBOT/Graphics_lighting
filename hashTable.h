@@ -13,16 +13,36 @@ struct htElement{
 	color c;
 };
 
-struct htElement** createHT();
-void freeHT(struct htElement** ht);
+struct hashTable {
+	struct htElement** ht;
+	int size;
+	int maxSize;
+	//unsigned int (*hash) (double*);
+};
 
-unsigned int getKey(double * vertex);
+// struct htElement** createHT();
+// void freeHT(struct htElement** ht);
 
-void addNormal(struct htElement** ht, double* vertex, double* normal);
-double * getNormal(struct htElement** ht, double * vertex);
-color getColor(struct htElement** ht, double* vertex);
-double * getVertexKey(struct htElement** ht, int key);
-void printHT(struct htElement** ht);
-void htNormalize(struct htElement** ht, double *view, double light[2][3], color ambient,
+// unsigned int getKey(double * vertex);
+
+// void addNormal(struct htElement** ht, double* vertex, double* normal);
+// double * getNormal(struct htElement** ht, double * vertex);
+// color getColor(struct htElement** ht, double* vertex);
+// double * getVertexKey(struct htElement** ht, int key);
+// void printHT(struct htElement** ht);
+// void htNormalize(struct htElement** ht, double *view, double light[2][3], color ambient,
+//   double *areflect, double *dreflect, double *sreflect);
+
+struct hashTable* createHT();
+void freeHT(struct hashTable* h);
+
+unsigned int getKey(struct hashTable* h, double * vertex);
+
+struct hashTable* addNormal(struct hashTable* h, double* vertex, double* normal);
+double * getNormal(struct hashTable* h, double * vertex);
+color getColor(struct hashTable* h, double* vertex);
+double * getVertexKey(struct hashTable* h, int key);
+void printHT(struct hashTable* h);
+void htNormalize(struct hashTable* h, double *view, double light[2][3], color ambient,
   double *areflect, double *dreflect, double *sreflect);
 #endif

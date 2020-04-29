@@ -11,7 +11,7 @@ void draw_scanline(int x0, double z0, int x1, double z1, int y, screen s, zbuffe
 void draw_scanline_phong(int x0, double z0, int x1, double z1, int y, screen s, zbuffer zb, double* n0, double* n1,
   double *view, double light[2][3], color ambient,
   double *areflect, double *dreflect, double *sreflect);
-void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, struct htElement** ht);
+void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, struct hashTable* h);
 void scanline_convert_phong( struct matrix* points, int i, screen s, zbuffer zb, struct htElement** ht, 
   double *view, double light[2][3], color ambient,
   double *areflect, double *dreflect, double *sreflect);
